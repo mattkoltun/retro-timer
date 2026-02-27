@@ -4,12 +4,34 @@
   "description": "Retro digital timer and stopwatch",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder --mac --publish never"
+  },
+  "build": {
+    "appId": "com.mkoltun.timer-app",
+    "productName": "Timer",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "icon": null
+    },
+    "generateUpdatesFilesForAllChannels": false,
+    "publish": null
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^40.6.1"
+    "electron": "^40.6.1",
+    "electron-builder": "^26.8.1"
   }
 }
