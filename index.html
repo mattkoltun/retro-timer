@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0a;
+      color: #00ff41;
+      font-family: 'Share Tech Mono', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Mode tabs */
+    .mode-tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 30px;
+    }
+
+    .mode-tab {
+      background: #111;
+      color: #555;
+      border: 1px solid #222;
+      padding: 8px 28px;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.2s;
+    }
+
+    .mode-tab:first-child {
+      border-radius: 4px 0 0 4px;
+    }
+
+    .mode-tab:last-child {
+      border-radius: 0 4px 4px 0;
+    }
+
+    .mode-tab.active {
+      background: #1a1a1a;
+      color: #00ff41;
+      border-color: #00ff41;
+      text-shadow: 0 0 8px #00ff4180;
+    }
+
+    /* Display */
+    .display {
+      position: relative;
+      background: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      border-radius: 8px;
+      padding: 20px 40px;
+      margin-bottom: 30px;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 255, 65, 0.05);
+    }
+
+    /* Ghost digits (the dim "8"s behind the display for LCD effect) */
+    .display::before {
+      content: "88:88:88";
+      position: absolute;
+      top: 20px;
+      left: 40px;
+      font-size: 80px;
+      color: #111;
+      letter-spacing: 4px;
+      pointer-events: none;
+    }
+
+    .time-display {
+      font-size: 80px;
+      letter-spacing: 4px;
+      text-shadow: 0 0 20px #00ff4140, 0 0 40px #00ff4120;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Timer input (when setting timer) */
+    .timer-input-group {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 30px;
+    }
+
+    .timer-input-group.visible {
+      display: flex;
+    }
+
+    .time-input {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 4px;
+      color: #00ff41;
+      font-family: inherit;
+      font-size: 28px;
+      width: 64px;
+      text-align: center;
+      padding: 6px 4px;
+      outline: none;
+    }
+
+    .time-input:focus {
+      border-color: #00ff41;
+      box-shadow: 0 0 8px #00ff4140;
+    }
+
+    .time-separator {
+      color: #00ff41;
+      font-size: 28px;
+    }
+
+    .input-label {
+      color: #555;
+      font-size: 11px;
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    .input-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      background: #111;
+      color: #00ff41;
+      border: 1px solid #00ff41;
+      border-radius: 4px;
+      padding: 10px 28px;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.15s;
+    }
+
+    .btn:hover {
+      background: #00ff41;
+      color: #0a0a0a;
+      box-shadow: 0 0 15px #00ff4160;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn.danger {
+      border-color: #ff3333;
+      color: #ff3333;
+    }
+
+    .btn.danger:hover {
+      background: #ff3333;
+      color: #0a0a0a;
+      box-shadow: 0 0 15px #ff333360;
+    }
+
+    /* Blinking colon animation when paused */
+    .paused .time-display {
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0.3; }
+    }
+
+    /* Timer finished flash */
+    .finished .time-display {
+      color: #ff3333;
+      text-shadow: 0 0 20px #ff333340, 0 0 40px #ff333320;
+      animation: flash 0.5s step-end infinite;
+    }
+
+    @keyframes flash {
+      50% { opacity: 0.2; }
+    }
+  </style>
+</head>
+<body>
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="timer">Timer</button>
+    <button class="mode-tab" data-mode="stopwatch">Stopwatch</button>
+  </div>
+
+  <div class="display" id="display">
+    <div class="time-display" id="timeDisplay">00:00:00</div>
+  </div>
+
+  <div class="timer-input-group visible" id="timerInputGroup">
+    <div class="input-col">
+      <input type="text" class="time-input" id="inputHours" maxlength="2" value="00" />
+      <span class="input-label">HRS</span>
+    </div>
+    <span class="time-separator">:</span>
+    <div class="input-col">
+      <input type="text" class="time-input" id="inputMinutes" maxlength="2" value="05" />
+      <span class="input-label">MIN</span>
+    </div>
+    <span class="time-separator">:</span>
+    <div class="input-col">
+      <input type="text" class="time-input" id="inputSeconds" maxlength="2" value="00" />
+      <span class="input-label">SEC</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="btnStart">Start</button>
+    <button class="btn danger" id="btnReset">Reset</button>
+  </div>
+
+  <script>
+    const display = document.getElementById("display");
+    const timeDisplay = document.getElementById("timeDisplay");
+    const timerInputGroup = document.getElementById("timerInputGroup");
+    const inputHours = document.getElementById("inputHours");
+    const inputMinutes = document.getElementById("inputMinutes");
+    const inputSeconds = document.getElementById("inputSeconds");
+    const btnStart = document.getElementById("btnStart");
+    const btnReset = document.getElementById("btnReset");
+    const modeTabs = document.querySelectorAll(".mode-tab");
+
+    let mode = "timer"; // "timer" | "stopwatch"
+    let state = "idle"; // "idle" | "running" | "paused" | "finished"
+    let intervalId = null;
+    let elapsedMs = 0;
+    let timerDurationMs = 0;
+    let lastTick = 0;
+
+    // --- Format helpers ---
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function formatMs(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      return `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    // --- Render ---
+    function render() {
+      display.classList.remove("paused", "finished");
+
+      if (mode === "timer") {
+        // Show input group only when idle
+        timerInputGroup.classList.toggle("visible", state === "idle");
+        // Update ghost digits to match
+        display.style.setProperty("--ghost", "88:88:88");
+
+        if (state === "idle") {
+          timeDisplay.textContent = "00:00:00";
+        } else if (state === "running") {
+          const remaining = timerDurationMs - elapsedMs;
+          timeDisplay.textContent = formatMs(remaining);
+        } else if (state === "paused") {
+          display.classList.add("paused");
+          const remaining = timerDurationMs - elapsedMs;
+          timeDisplay.textContent = formatMs(remaining);
+        } else if (state === "finished") {
+          display.classList.add("finished");
+          timeDisplay.textContent = "00:00:00";
+        }
+      } else {
+        // Stopwatch
+        timerInputGroup.classList.remove("visible");
+
+        if (state === "idle") {
+          timeDisplay.textContent = "00:00:00";
+        } else {
+          timeDisplay.textContent = formatMs(elapsedMs);
+        }
+
+        if (state === "paused") {
+          display.classList.add("paused");
+        }
+      }
+
+      // Button labels
+      if (state === "idle") {
+        btnStart.textContent = "Start";
+      } else if (state === "running") {
+        btnStart.textContent = "Pause";
+      } else if (state === "paused") {
+        btnStart.textContent = "Resume";
+      } else if (state === "finished") {
+        btnStart.textContent = "Start";
+      }
+    }
+
+    // --- Tick ---
+    function tick() {
+      const now = performance.now();
+      const delta = now - lastTick;
+      lastTick = now;
+      elapsedMs += delta;
+
+      if (mode === "timer" && elapsedMs >= timerDurationMs) {
+        elapsedMs = timerDurationMs;
+        state = "finished";
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+
+      render();
+    }
+
+    // --- Actions ---
+    function start() {
+      if (state === "idle" || state === "finished") {
+        elapsedMs = 0;
+
+        if (mode === "timer") {
+          const h = parseInt(inputHours.value, 10) || 0;
+          const m = parseInt(inputMinutes.value, 10) || 0;
+          const s = parseInt(inputSeconds.value, 10) || 0;
+          timerDurationMs = (h * 3600 + m * 60 + s) * 1000;
+          if (timerDurationMs <= 0) return;
+        }
+
+        state = "running";
+        lastTick = performance.now();
+        intervalId = setInterval(tick, 50);
+      } else if (state === "running") {
+        // Pause
+        state = "paused";
+        clearInterval(intervalId);
+        intervalId = null;
+      } else if (state === "paused") {
+        // Resume
+        state = "running";
+        lastTick = performance.now();
+        intervalId = setInterval(tick, 50);
+      }
+
+      render();
+    }
+
+    function reset() {
+      clearInterval(intervalId);
+      intervalId = null;
+      state = "idle";
+      elapsedMs = 0;
+      timerDurationMs = 0;
+      render();
+    }
+
+    function switchMode(newMode) {
+      if (newMode === mode) return;
+      reset();
+      mode = newMode;
+      modeTabs.forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.mode === mode);
+      });
+      render();
+    }
+
+    // --- Input sanitization ---
+    [inputHours, inputMinutes, inputSeconds].forEach((input) => {
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/[^0-9]/g, "");
+      });
+      input.addEventListener("focus", () => input.select());
+    });
+
+    // --- Event listeners ---
+    btnStart.addEventListener("click", start);
+    btnReset.addEventListener("click", reset);
+    modeTabs.forEach((tab) => {
+      tab.addEventListener("click", () => switchMode(tab.dataset.mode));
+    });
+
+    // Keyboard shortcut: Space to start/pause
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT") return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        start();
+      } else if (e.code === "KeyR") {
+        reset();
+      }
+    });
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
