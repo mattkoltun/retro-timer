@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 
 function createWindow() {
@@ -7,15 +7,22 @@ function createWindow() {
     height: 400,
     backgroundColor: "#0a0a0a",
     resizable: true,
+    frame: false,
+    titleBarStyle: "hidden",
+    trafficLightPosition: { x: -20, y: -20 },
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
   win.loadFile("index.html");
-  win.setMenuBarVisibility(false);
 }
+
+ipcMain.on("close-app", () => {
+  app.quit();
+});
 
 app.whenReady().then(createWindow);
 
