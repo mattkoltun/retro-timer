@@ -1,15 +1,19 @@
 {
-  "name": "timer-app",
+  "name": "retro-timer",
   "version": "1.0.0",
   "description": "Retro digital timer and stopwatch",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --mac --publish never"
+    "dist": "electron-builder --publish never",
+    "dist:mac": "electron-builder --mac --x64 --arm64 --publish never",
+    "dist:win": "electron-builder --win --x64 --arm64 --publish never",
+    "dist:linux": "electron-builder --linux --x64 --arm64 --publish never",
+    "dist:all": "electron-builder --mac --win --linux --x64 --arm64 --publish never"
   },
   "build": {
-    "appId": "com.mkoltun.timer-app",
-    "productName": "Timer",
+    "appId": "com.koltunm.timer-app",
+    "productName": "RetroTimer",
     "files": [
       "main.js",
       "preload.js",
@@ -18,18 +22,38 @@
     ],
     "mac": {
       "target": [
-        "dmg",
-        "zip"
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
       ],
       "category": "public.app-category.utilities",
+      "icon": null
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ],
+      "icon": null
+    },
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64", "arm64"] },
+        { "target": "deb", "arch": ["x64", "arm64"] },
+        { "target": "tar.gz", "arch": ["x64", "arm64"] }
+      ],
+      "category": "Utility",
       "icon": null
     },
     "generateUpdatesFilesForAllChannels": false,
     "publish": null
   },
+  "homepage": "https://github.com/mattkoltun/timer-app",
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "mattkoltun",
+    "email": "matt@koltunm.com"
+  },
+  "license": "MIT",
   "devDependencies": {
     "electron": "^40.6.1",
     "electron-builder": "^26.8.1"
