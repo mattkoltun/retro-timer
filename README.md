@@ -1,10 +1,16 @@
-# RetroTimer
+
+██████╗ ███████╗████████╗██████╗  ██████╗     ████████╗██╗███╗   ███╗███████╗██████╗
+██╔══██╗██╔════╝╚══██╔══╝██╔══██╗██╔═══██╗    ╚══██╔══╝██║████╗ ████║██╔════╝██╔══██╗
+██████╔╝█████╗     ██║   ██████╔╝██║   ██║       ██║   ██║██╔████╔██║█████╗  ██████╔╝
+██╔══██╗██╔══╝     ██║   ██╔══██╗██║   ██║       ██║   ██║██║╚██╔╝██║██╔══╝  ██╔══██╗
+██║  ██║███████╗   ██║   ██║  ██║╚██████╔╝       ██║   ██║██║ ╚═╝ ██║███████╗██║  ██║
+╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝        ╚═╝   ╚═╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═╝
 
 A retro digital timer and stopwatch desktop app built with Electron.
 
-![RetroTimer](screenshot.png)
-
 Green-on-black LCD display with ghost digits, two modes (countdown timer and stopwatch), frameless window, and keyboard shortcuts. Runs on macOS, Windows, and Linux.
+
+![RetroTimer](screenshot.png)
 
 ## Features
 
