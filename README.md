@@ -71,7 +71,7 @@ Each format is built for both **x64** (Intel/AMD) and **arm64** (Apple Silicon /
 If the app is published to a GitHub release, you can install it with Homebrew:
 
 ```bash
-brew tap mattkoltun/tap
+brew tap mattkoltun/apps
 brew install --cask retro-timer
 ```
 
